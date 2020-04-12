@@ -1,12 +1,12 @@
 # Zwave2Mqtt-docker
 
-[![Pulls](https://img.shields.io/docker/pulls/robertslando/zwave2mqtt.svg)](https://hub.docker.com/r/robertslando/zwave2mqtt)
-[![Build](https://img.shields.io/docker/cloud/build/robertslando/zwave2mqtt.svg)](https://hub.docker.com/r/robertslando/zwave2mqtt)
-[![Image size](https://images.microbadger.com/badges/image/robertslando/zwave2mqtt.svg)](https://hub.docker.com/r/robertslando/zwave2mqtt "Get your own image badge on microbadger.com")
+[![dockeri.co](https://dockeri.co/image/robertslando/zwave2mqtt)](https://hub.docker.com/r/robertslando/zwave2mqtt)
 
 <a href="https://www.buymeacoffee.com/MVg9wc2HE" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
 Docker container for Zwave2Mqtt Gateway and Control Panel app using pkg
+
+**ATTENTION: STARTING FROM Z2M 2.1.1 OZW 1.4 SUPPORT HAS ENDED AND `latest` TAG WILL ALWAYS HAVE OZW 1.6**
 
 > **Image size acually is lower than 80MB**
 
@@ -20,10 +20,24 @@ robertslando/zwave2mqtt         latest              043a0d327ad6        2 minute
 
 Supported architectures are:
 
-- `x86_64 amd64` Tag `:amd64-latest`
-- `armv6`  Tag `:arm32v6-latest`
-- `armv7`  Tag `:arm32v7-latest` (Raspberry PI)
-- `arm64` Tag `:arm64v8-latest` (OrangePI NanoPI)
+- `x86_64 amd64`
+- `armv6`
+- `armv7` (Ex. Raspberry PI)
+- `arm64` (Ex. OrangePI NanoPI)
+
+Available Tags:
+
+- `latest`: Always points to the latest version published using OZW 1.6
+- `latest-dev`: **DEPRECATED** Starting from version 2.1.1 OZW 1.4 is no more supported so `latest` tag will always contain OZW 1.6. Last available `latest-dev` manifest is running z2m 2.1.0 with ozw 1.6
+- `3.0.2`: OZW 1.6.1061
+- `3.0.1`: OZW 1.6.1045
+- `3.0.0`: OZW 1.6.1045
+- `2.2.0`: OZW 1.6.1038
+- `2.1.1`: OZW 1.6.1004
+- `2.1.0`: OZW 1.4
+- `2.1.0-dev`: OZW 1.6.1004
+- `2.0.6`: OZW 1.4
+- `2.0.6-dev`: OZW 1.6.962
 
 ## Install
 
@@ -107,15 +121,37 @@ Delete Volume
 docker volume rm zwave2mqtt
 ```
 
+### Auto Update OZW device database
+
+If you would like to enable this feature of OZW you need to keep the device database inside a volume or a local folder and map it inside the container. To do this follow this steps:
+
+```sh
+APP=$(docker run --rm -it -d robertslando/zwave2mqtt:latest)
+docker cp $APP:/usr/local/etc/openzwave ./
+docker kill $APP
+```
+
+With this command you should have copied all your container device db in a local folder named `openzwave`. Now you should map this folder inside your container:
+
+By adding an option:
+
+`-v $(pwd)/openzwave:/usr/local/etc/openzwave`
+
+Or in docker-compose file:
+
+```yml
+volumes:
+      - ./openzwave:/usr/local/etc/openzwave
+```
+
 ## Custom builds
 
-Docker images contains latest stable images of [zwave2mqtt](https://github.com/OpenZWave/Zwave2Mqtt) repo. If you want to keep your image updated with latest changes you can build it on your local machine. Just select a commit and replace existing [commit](https://github.com/OpenZWave/Zwave2Mqtt/commits/master) in Dockerfile [here](https://github.com/robertsLando/Zwave2Mqtt-docker/blob/master/Dockerfile#L9)
+The docker images are the latest stable images of the [zwave2mqtt](https://github.com/OpenZWave/Zwave2Mqtt) repo. If you want to keep your image updated with the latest changes you can build it on your local machine. Just select a commit sha, a branch name, or a tag name, and pass it to docker build using the *--build-arg* option for the *Z2M_GIT_SHA1* and *OPENZWAVE_GIT_SHA1* arguments. For example:
 
 ```bash
 git clone https://github.com/robertsLando/Zwave2Mqtt-docker.git
 cd Zwave2Mqtt-docker
-sed -i "s|<actualCommit>|<newCommit>|g" Dockerfile
-docker build -t robertslando/zwave2mqtt:latest .
+docker build --build-arg Z2M_GIT_SHA1=master --build-arg OPENZWAVE_GIT_SHA1=master -t robertslando/zwave2mqtt:latest .
 ```
 
 Build just the `build` container
